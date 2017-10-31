@@ -1,11 +1,5 @@
-// Sonar Drone 02 - Test flight program with altitude control
-// by Jesse Lew
-
-// Notes: 70% takeoff. COG pitch 1515. throttlechange = 3.
-// Need to add landing procedures.
-
-#include <Servo.h> 
-#include <Wire.h> 
+#include <Servo.h>
+#include <Wire.h>
 
 // create servo objects (max 8 can be created) 
 Servo aux1;   // auto-leveler
@@ -23,9 +17,9 @@ int yawVal;
 int throttleVal;
 int minThrottle = 1000;
 int maxThrottle = 2000;
+int motorTurner = 90;
 
 // initialize counter and procedures
-long int cpt = 0;
 bool startupProc = true;
 bool testProc = true;
 
@@ -75,7 +69,6 @@ int getDistance()
   return centimeters;
 }
 
-
 void shutdownProc()
 {
     //throttle.write(1000);  // bring throttle to minimum
@@ -83,37 +76,6 @@ void shutdownProc()
     //Serial.print("motors should be locked now");
     //startupProc = true;      // reset startup procedure flag
 }
-
-
-// This function read Nbytes bytes from I2C device at address Address. 
-// Put read bytes starting at register Register in the Data array. 
-void I2Cread(uint8_t Address, uint8_t Register, uint8_t Nbytes, uint8_t* Data)
-{
-  // Set register address
-  Wire.beginTransmission(Address);
-  Wire.write(Register);
-  Wire.endTransmission();
- 
-  // Read Nbytes
-  Wire.requestFrom(Address, Nbytes); 
-  uint8_t index=0;
-  while (Wire.available())
-  {
-    Data[index++]=Wire.read();
-  }
-}
- 
- 
-// Write a byte (Data) in device (Address) at register (Register)
-void I2CwriteByte(uint8_t Address, uint8_t Register, uint8_t Data)
-{
-  // Set register address
-  Wire.beginTransmission(Address);
-  Wire.write(Register);
-  Wire.write(Data);
-  Wire.endTransmission();
-}
-
 
 // SETUP
 // set arduino pins
@@ -135,12 +97,6 @@ void setup()
   Wire.begin();
   Serial.begin(9600);
   
-  // Configure gyroscope range
-  I2CwriteByte(MPU9250_ADDRESS,27,GYRO_FULL_SCALE_2000_DPS);
-  // Configure accelerometers range
-  I2CwriteByte(MPU9250_ADDRESS,28,ACC_FULL_SCALE_16_G);
-} 
- 
 
 // MAIN LOOP
 void loop() 
@@ -198,7 +154,7 @@ void loop()
       Serial.println("");
       // test values
       delay(1000);
-      throttleVal = 1700;
+      throttleVal = 1700; 
       throttle.write(throttleVal);  // 70% throttle
 
       testProc = false;
@@ -255,55 +211,6 @@ void loop()
         //Serial.println();
       }
       
-      // Display data counter
-      //Serial.print (cpt++,DEC);
-      //Serial.print ("\t");
-     
-      // Read accelerometer and gyroscope
-      uint8_t Buf[14];
-      I2Cread(MPU9250_ADDRESS,0x3B,14,Buf);
-     
-     
-      // Create 16 bits values from 8 bits data
-     
-      // Accelerometer
-      int16_t ax=-(Buf[8]<<8 | Buf[9]);
-      int16_t ay=-(Buf[10]<<8 | Buf[11]);
-      int16_t az=Buf[12]<<8 | Buf[13];
-     
-      // Gyroscope
-      int16_t gx=-(Buf[0]<<8 | Buf[1]);
-      int16_t gy=-(Buf[2]<<8 | Buf[3]);
-      int16_t gz=Buf[4]<<8 | Buf[5];
-    
-     
-      // Display values
-      
-      // Accelerometer
-      //Serial.print ("aX\t");
-      //Serial.print (ax,DEC); 
-      //Serial.print ("\t");
-      //Serial.print ("aY\t");
-      //Serial.print (ay,DEC);
-      //Serial.print ("\t");
-      //Serial.print ("aZ\t");
-      //Serial.print (az,DEC);  
-      //Serial.print ("\t");
-     
-      // Gyroscope
-      //Serial.print ("gX\t");
-      //Serial.print (gx,DEC); 
-      //Serial.print ("\t");
-      //Serial.print ("gY\t");
-      //Serial.print (gy,DEC);
-      //Serial.print ("\t");
-      //Serial.print ("gZ\t");
-      //Serial.print (gz,DEC);  
-      //Serial.print ("\t");
-    
-      // End of line
-      //Serial.println("");
-      
       // update previousMillis
       previousMillis = currentMillis;
     }
@@ -315,8 +222,9 @@ void loop()
     
   // code that constantly runs before interval goes here 
   
-  // min throttle after 25 seconds
-  if(currentMillis > 25000)
+  // min throttle after x milliseconds
+  x = 15000
+  if(currentMillis > x)
   {
     //landProc();     // run landing procedures
     shutdownProc(); // run shutdown procedures
